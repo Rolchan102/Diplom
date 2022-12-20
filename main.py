@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import Select
 
 
 def get_data_with_selenium(url):
+    global price_per_unit
     options = webdriver.ChromeOptions()
     options.add_argument("start-maximized")
 
@@ -45,11 +46,44 @@ def get_data_with_selenium(url):
     select.select_by_visible_text('Новая лицензия')
 
     # Количество
-    for i in range(5, 6):
-        text_input = driver.find_element(By.XPATH, '//*[@id="business_dwdsscp"]')
-        # Удалить предыдущий ввод
-        text_input.clear()
-        text_input.send_keys(i)
+    # for i in range(5, 6):
+    #     text_input = driver.find_element(By.XPATH, '//*[@id="business_dwdsscp"]')
+    #     # Удалить предыдущий ввод
+    #     text_input.clear()
+    #     text_input.send_keys(i)
+    i = 1
+
+    # Dr.Web Desktop Security Suite
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwdsscp"]')
+    dss_input.send_keys(5)
+
+    # Dr.Web Server Security Suite
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwsss"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web Mail Security Suite
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwmss"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web Gateway Security Suite
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwgss"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web Mobile Security Suite
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwmoss"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web Katana Windows
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwk"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web Katana Windows Server
+    dss_input = driver.find_element(By.XPATH, '//*[@id="business_dwsssk"]')
+    dss_input.send_keys(i)
+
+    # Dr.Web ATM Shield
+    dss_input = driver.find_element(By.XPATH, '//*[@id="drw_atm_shield_biz"]')
+    dss_input.send_keys(i)
 
     with open("index_selenium.html", "w", encoding='utf-8') as file:
         file.write(driver.page_source)
@@ -62,26 +96,22 @@ def get_data_with_selenium(url):
 
     soup = BeautifulSoup(src, "lxml")
 
-    l_float = soup.find("div", {"id": "basket"}).find_all("div", class_="l-float", limit=1)
-    # print(l_float)
-    r_float = soup.find("div", {"id": "basket"}).find_all("div", class_="r-float", limit=1)
-    # print(r_float)
+    l_float = soup.find("div", {"id": "basket"}).find("div", {"name": "item_of_basket_products"}).find_all("div", class_="l-float")
+    print(l_float)
+    r_float = soup.find("div", {"id": "basket"}).find("div", {"name": "item_of_basket_products"}).find_all("div", class_="r-float")
+    print(r_float)
 
     for item in l_float:
         try:
             name = item.find("h6", class_="title").string
         except:
             name = "Нет наименования позиции"
-
-    for item in l_float:
         try:
             product_code = item.find("small").string
         except:
             product_code = "Нет кода продукта"
-
-    for price_per_unit in l_float:
         try:
-            price_per_unit = price_per_unit.find("span", class_="gray").string
+            price_per_unit = item.find("span", class_="gray").string
         except:
             price_per_unit = "Нет цены за позицию"
 
@@ -93,7 +123,7 @@ def get_data_with_selenium(url):
 
     print(product_code, ",", name, ",", price_per_unit, ",", total_price)
 
-    with open("Dr.web_price.csv", "w", encoding='utf-8') as file:
+    with open("Dr.web_price.csv", "a", encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(
             [product_code, name, price_per_unit, total_price]
